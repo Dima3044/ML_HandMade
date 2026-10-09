@@ -1,4 +1,5 @@
 import numpy as np
+from src.metrics import mean_squared_error
 
 
 class LinearRegressionAnalytics:
@@ -38,7 +39,7 @@ class LinearRegressionGD:
 
         for _ in range(self.n_iter):
             y_pred = X @ self.w_ + self.b_
-            loss = np.mean((y-y_pred)**2)
+            loss = mean_squared_error(y, y_pred)
             if self.l2_coef > 0:
                 loss += self.l2_coef * np.mean(self.w_ ** 2)
             self.losses_.append(loss)
