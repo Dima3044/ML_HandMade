@@ -58,10 +58,13 @@ class BaseLinearRegressionGD:
         self.w_ -= self.eta * dfdw
         self.b_ -= self.eta * dfdb
 
-    def fit(self, X, y):
+    def fit(self, X, y, X_test=None, y_test=None):
         self._initialize_weights(X.shape[-1])
         self.losses_ = []
         self.scores_ = []
+        if X_test is not None and y_test is not None:
+            self.test_losses_ = []
+            self.test_scores_ = []
 
         for _ in range(self.n_iter):
             y_pred = X @ self.w_ + self.b_
@@ -69,11 +72,17 @@ class BaseLinearRegressionGD:
             score = r2_score(y, y_pred)
             self.losses_.append(loss)
             self.scores_.append(score)
-
+            if X_test is not None and y_test is not None:
+                y_test_pred = X_test @ self.w_ + self.b_
+                test_loss = self._count_loss(y_test, y_test_pred)
+                test_r2 = r2_score(y_test, y_test_pred)
+                self.test_losses_.append(test_loss)
+                self.test_scores_.append(test_r2)
             dfdw = self._count_grad(X, y, y_pred)
             dfdb = 2 * np.mean(y_pred - y)
             self._grad_step(dfdw, dfdb)
         return self
+        
 
     def predict(self, X):
         return X @ self.w_ + self.b_
@@ -115,7 +124,7 @@ class Ridge(BaseLinearRegressionGD):
 
 class Lasso(BaseLinearRegressionGD):
     """
-    Класс для лассо (L1) регрессии полным проксимальным 
+    Класс для лассо (L1) регрессии полным проксимальным
     градиентным спуском.
     Args:
         eta: шаг обучения
